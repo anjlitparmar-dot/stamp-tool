@@ -8,7 +8,7 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://apis.google.com/js/api.js"></script>
     <style>
-        /* તમારો ઓરિજિનલ CSS કોડ */
+        /* મુળ ફાઈલ મુજબની તમામ ડિઝાઇન */
         :root { --primary: #2c3e50; --secondary: #1abc9c; --bg: #f8f9fa; --accent: #3498db; --text: #2c3e50; --card-bg: #ffffff; }
         * { box-sizing: border-box; font-family: 'Hind Vadodara', sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--text); }
@@ -94,7 +94,7 @@
             </div>
 
             <div class="card add-section" style="padding:15px;">
-                <div style="display:flex; gap:10px; flex-wrap: wrap; align-items: center;">
+                <div style="display:flex; gap:10px; flex-wrap: wrap; align-items:center;">
                     <input type="text" id="fName" style="flex:2; padding:8px; border-radius:5px; border:1px solid #ddd;">
                     <input type="date" id="fDate" style="padding:8px; border-radius:5px; border:1px solid #ddd;">
                     
@@ -115,7 +115,7 @@
     </div>
 
     <script>
-        // --- ગૂગલ ડ્રાઇવ કોન્ફિગરેશન ---
+        // Google Config
         const CLIENT_ID = '397668795740-8q3rsm03at45tga2p820pi2pmris2pvu.apps.googleusercontent.com
 '; 
         const SCOPES = 'https://www.googleapis.com/auth/drive.file';
@@ -126,13 +126,12 @@
         let lang = localStorage.getItem('StampLang') || 'gu';
         let db = JSON.parse(localStorage.getItem('StampAct_V22')) || null;
 
-        // ઓરિજિનલ UI ટેક્સ્ટ
         const uiText = {
             gu: { homeTitle: "ગુજરાત સ્ટેમ્પ અધિનિયમ-૧૯૫૮", tileSection: "📜 કલમ", tileArticle: "📑 આર્ટીકલ", tileJantri: "🗺️ જંત્રી", backup: "💾 બેકઅપ", restore: "📂 રીસ્ટોર", homeBtn: "← મુખ્ય મેનુ", search: "શોધો...", print: "🖨️ પ્રિન્ટ", provision: "📖 કાયદાકીય જોગવાઈ:", edit: "✏️ સુધારો", save: "સેવ કરો", add: "➕ ઉમેરો", placeholder: "વિગત લખો", rename: "✏️ નામ આપો", locked: "🔒 Locked" },
             en: { homeTitle: "Gujarat Stamp Act-1958", tileSection: "📜 Sections", tileArticle: "📑 Articles", tileJantri: "🗺️ Jantri", backup: "💾 Backup", restore: "📂 Restore", homeBtn: "← Main Menu", search: "Search...", print: "🖨️ Print", provision: "📖 Legal Provision:", edit: "✏️ Edit", save: "Save", add: "➕ Add", placeholder: "Enter details", rename: "✏️ Rename", locked: "🔒 Locked" }
         };
 
-        // Initialize Google APIs
+        // Google Auth
         function gapiLoaded() { gapi.load('client', async () => { await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] }); gapiInited = true; }); }
         function gisLoaded() { tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: '' }); }
         function handleAuthClick() {
@@ -144,7 +143,6 @@
             tokenClient.requestAccessToken({prompt: 'consent'});
         }
 
-        // ઓરિજિનલ ડેટાબેઝ સ્ટ્રક્ચર
         if (!db) {
             db = {"કલમ":{}, "આર્ટીકલ":{}, "જંત્રી":{}};
             for(let i=1; i<=76; i++) db["કલમ"][`કલમ-${i}`] = { provision: "", files: [], fav: false, isLocked: false };
@@ -208,7 +206,6 @@
             renderFiles(); refreshSide();
         }
 
-        // --- નવું ફંક્શન: PDF અપલોડ અને એડ [સુધારેલ] ---
         async function addFileWithUpload() {
             const name = document.getElementById('fName').value;
             const date = document.getElementById('fDate').value;
@@ -216,9 +213,9 @@
             const fileInput = document.getElementById('fPDFFile');
             const status = document.getElementById('upload-status');
 
-            if(!name || fileInput.files.length === 0) return alert("નામ અને PDF જરૂરી છે!");
+            if(!name || fileInput.files.length === 0) return alert("નામ અને ફાઇલ જરૂરી છે!");
             
-            status.innerText = "⏳ Uploading...";
+            status.innerText = "⏳ અપલોડ ચાલુ છે...";
             try {
                 const file = fileInput.files[0];
                 const metadata = { 'name': file.name, 'mimeType': 'application/pdf' };
@@ -232,36 +229,18 @@
                     body: formData
                 });
                 const result = await response.json();
-                const driveUrl = result.webViewLink;
-
-                // ડેટાબેઝમાં સેવ કરો
-                db[curMod][curItem].files.push({ id: Date.now(), name, date, url: driveUrl, type, ts: new Date(date).getTime() });
+                
+                db[curMod][curItem].files.push({ id: Date.now(), name, date, url: result.webViewLink, type, ts: new Date(date).getTime() });
                 save(); renderFiles();
                 
-                status.innerText = "✅ Done!";
+                status.innerText = "✅ સેવ થયું!";
                 document.getElementById('fName').value = ''; fileInput.value = '';
                 setTimeout(() => status.innerText = "", 2000);
             } catch (err) {
-                status.innerText = "❌ Error!";
+                status.innerText = "❌ ભૂલ!";
                 alert("પહેલા 'Google Drive સાથે જોડો' પર ક્લિક કરો.");
             }
         }
-
-        // બાકીના ઓરિજિનલ ફંક્શન (renameItem, toggleFav, editP, saveP, renderFiles, export/import)
-        function renameItem() {
-            let msg = lang === 'gu' ? "નવું નામ લખો:" : "Enter new name:";
-            let newTitle = prompt(msg, curItem);
-            if(newTitle && newTitle !== curItem) {
-                db[curMod][newTitle] = db[curMod][curItem];
-                db[curMod][newTitle].isLocked = true;
-                delete db[curMod][curItem];
-                curItem = newTitle;
-                save(); refreshSide(); selectItem(newTitle);
-            }
-        }
-        function toggleFav() { db[curMod][curItem].fav = !db[curMod][curItem].fav; save(); selectItem(curItem); }
-        function editP() { document.getElementById('p-text').style.display='none'; document.getElementById('p-input').style.display='block'; document.getElementById('p-input').value = db[curMod][curItem].provision; document.getElementById('p-save').style.display='block'; document.getElementById('p-edit-btn').style.display='none'; }
-        function saveP() { db[curMod][curItem].provision = document.getElementById('p-input').value; save(); document.getElementById('p-text').innerText = db[curMod][curItem].provision; document.getElementById('p-text').style.display='block'; document.getElementById('p-input').style.display='none'; document.getElementById('p-save').style.display='none'; document.getElementById('p-edit-btn').style.display='block'; }
 
         function renderFiles() {
             const container = document.getElementById('results-area'); container.innerHTML = "";
@@ -279,6 +258,12 @@
                 }
             });
         }
+
+        // બાકીના મુળ ફંક્શન
+        function renameItem() { let msg = lang === 'gu' ? "નવું નામ:" : "New name:"; let newT = prompt(msg, curItem); if(newT) { db[curMod][newT] = db[curMod][curItem]; db[curMod][newT].isLocked=true; delete db[curMod][curItem]; curItem=newT; save(); refreshSide(); selectItem(newT); } }
+        function toggleFav() { db[curMod][curItem].fav = !db[curMod][curItem].fav; save(); selectItem(curItem); }
+        function editP() { document.getElementById('p-text').style.display='none'; document.getElementById('p-input').style.display='block'; document.getElementById('p-input').value = db[curMod][curItem].provision; document.getElementById('p-save').style.display='block'; document.getElementById('p-edit-btn').style.display='none'; }
+        function saveP() { db[curMod][curItem].provision = document.getElementById('p-input').value; save(); document.getElementById('p-text').innerText = db[curMod][curItem].provision; document.getElementById('p-text').style.display='block'; document.getElementById('p-input').style.display='none'; document.getElementById('p-save').style.display='none'; document.getElementById('p-edit-btn').style.display='block'; }
         function deleteFile(fid) { if(!confirm("Delete?")) return; db[curMod][curItem].files = db[curMod][curItem].files.filter(f => f.id !== fid); save(); renderFiles(); }
         function exportData() { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db)); const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", "StampAct_Backup.json"); dl.click(); }
         function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); location.reload(); }; reader.readAsText(e.target.files[0]); }
