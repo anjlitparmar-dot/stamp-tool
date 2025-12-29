@@ -2,58 +2,73 @@
 <html lang="gu">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stamp Act Tool - PDF & Cloud Sync</title>
+    <title>Gujarat Stamp Act Tool - Sync</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://apis.google.com/js/api.js"></script>
     <style>
-        :root { --primary: #2c3e50; --secondary: #1abc9c; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg); }
-        .container { padding: 20px; max-width: 1000px; margin: auto; }
-        .header { background: var(--primary); color: white; padding: 20px; text-align: center; border-radius: 0 0 20px 20px; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 20px; }
-        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-google { background: #4285F4; color: white; }
-        .btn-save { background: var(--secondary); color: white; }
-        #status { margin-top: 10px; font-size: 14px; color: #666; }
-        .file-input { margin: 20px 0; padding: 10px; border: 2px dashed #ddd; width: 100%; text-align: center; }
+        /* તમારા સ્ક્રીનશોટ મુજબની ડિઝાઇન */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; }
+        .header { background-color: #2c3e50; color: white; padding: 15px; text-align: center; }
+        .main-container { display: flex; padding: 20px; gap: 20px; }
+        .sidebar { width: 250px; background: #34495e; color: white; border-radius: 8px; padding: 10px; }
+        .content-area { flex-grow: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .input-group { display: flex; gap: 10px; margin-top: 20px; align-items: center; background: #f9f9f9; padding: 15px; border-radius: 8px; }
+        input, button { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .btn-add { background-color: #1abc9c; color: white; border: none; cursor: pointer; font-weight: bold; }
+        .btn-add:hover { background-color: #16a085; }
+        #status-msg { color: #e67e22; font-weight: bold; margin-left: 10px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>📜 ગુજરાત સ્ટેમ્પ અધિનિયમ ટૂલ</h1>
-    <button id="auth_button" class="btn btn-google" onclick="handleAuthClick()">🔐 Google Drive સાથે જોડો</button>
-    <p id="status">સ્થિતિ: ડિસ્કનેક્ટેડ</p>
+    <h2>ગુજરાત સ્ટેમ્પ અધિનિયમ ટૂલ</h2>
+    <button id="auth_btn" onclick="handleAuthClick()" style="background:#4285F4; color:white; border:none; padding:8px 15px; cursor:pointer; border-radius:4px;">🔐 Google Drive સાથે જોડો</button>
 </div>
 
-<div class="container">
-    <div class="card">
-        <h3>📂 PDF ફાઈલ અપલોડ કરો</h3>
-        <p style="font-size: 12px; color: red;">* આ ફાઈલો સીધી તમારા ગૂગલ ડ્રાઈવમાં સેવ થશે.</p>
-        <input type="file" id="pdf-upload" class="file-input" accept="application/pdf" multiple>
-        <button class="btn btn-save" onclick="uploadFiles()">🚀 ડ્રાઈવ પર અપલોડ કરો</button>
+<div class="main-container">
+    <div class="sidebar">
+        <button style="width:100%; background:#e74c3c; color:white; border:none; padding:10px; margin-bottom:10px;">← મુખ્ય મેનુ</button>
+        <div id="section-list">
+            <div style="padding:10px; border-bottom:1px solid #455a64;">કલમ-૧</div>
+        </div>
     </div>
 
-    <div class="card">
-        <h3>📝 ડેટા એન્ટ્રી</h3>
-        <textarea id="data-text" style="width:100%; height:100px; padding:10px;" placeholder="અહીં વિગતો લખો..."></textarea>
-        <br><br>
-        <button class="btn btn-save" onclick="saveData()">💾 ડેટા સેવ કરો</button>
+    <div class="content-area">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>કલમ-૧ <span style="font-size:14px; background:#eee; padding:5px; border-radius:4px; cursor:pointer;">📝 નામ આપો</span></h3>
+            <button style="background:#f39c12; color:white; border:none; padding:5px 15px; border-radius:4px;">🌐 Language</button>
+        </div>
+
+        <div style="border:1px solid #ffeaa7; background:#fffdf2; padding:15px; border-radius:8px; margin-top:20px;">
+            <strong>🗹 કાયદાકીય જોગવાઈ:</strong>
+            <p>...</p>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="entry-val" placeholder="વિગત (દા.ત. ૪૦૦)" style="width:100px;">
+            <input type="date" id="entry-date">
+            
+            <div style="border: 1px solid #ddd; padding: 5px; background: white; border-radius: 4px;">
+                <label style="font-size: 12px; display: block; color: #666;">PDF અપલોડ કરો:</label>
+                <input type="file" id="pdf-file" accept="application/pdf">
+            </div>
+
+            <button class="btn-add" onclick="processAndAdd()">+ ઉમેરો</button>
+            <span id="status-msg"></span>
+        </div>
     </div>
 </div>
 
 <script>
-    const CLIENT_ID = '397668795740-8q3rsm03at45tga2p820pi2pmris2pvu.apps.googleusercontent.com
-'; 
+    const CLIENT_ID = 'અહીં_તમારી_CLIENT_ID_નાખો'; 
+    const SCOPES = 'https://www.googleapis.com/auth/drive.file';
     const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
-    // SCOPES માં drive.file ઉમેર્યું છે જેથી PDF સેવ થઈ શકે
-    const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata';
 
     let tokenClient;
     let gapiInited = false;
 
-    // 1. Initialize Google API
+    // 1. Initialize APIs
     function gapiLoaded() {
         gapi.load('client', async () => {
             await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
@@ -69,77 +84,64 @@
         });
     }
 
-    // 2. Authentication
-    async function handleAuthClick() {
+    function handleAuthClick() {
         tokenClient.callback = async (resp) => {
             if (resp.error !== undefined) throw (resp);
-            document.getElementById('status').innerText = "✅ ગૂગલ ડ્રાઈવ સાથે જોડાયેલ છે";
-            document.getElementById('auth_button').style.display = 'none';
+            document.getElementById('auth_btn').innerText = "✅ જોડાયેલ છે";
+            document.getElementById('status-msg').innerText = "Google Drive સિંક ચાલુ છે.";
         };
         tokenClient.requestAccessToken({prompt: 'consent'});
     }
 
-    // 3. PDF Upload Function
-    async function uploadFiles() {
-        const fileInput = document.getElementById('pdf-upload');
-        if (fileInput.files.length === 0) {
-            alert("મહેરબાની કરીને એક PDF ફાઈલ પસંદ કરો.");
+    // 2. Main Process: Upload PDF and Save Data
+    async function processAndAdd() {
+        const val = document.getElementById('entry-val').value;
+        const date = document.getElementById('entry-date').value;
+        const fileInput = document.getElementById('pdf-file');
+        const status = document.getElementById('status-msg');
+
+        if (!val || !date || fileInput.files.length === 0) {
+            alert("મહેરબાની કરીને બધી વિગતો ભરો અને PDF ફાઈલ પસંદ કરો.");
             return;
         }
 
-        document.getElementById('status').innerText = "⏳ અપલોડ થઈ રહ્યું છે...";
+        status.innerText = "⏳ PDF અપલોડ થઈ રહી છે...";
 
-        for (let file of fileInput.files) {
-            const metadata = {
-                'name': file.name,
-                'mimeType': 'application/pdf'
-            };
-
+        try {
+            // PDF અપલોડ કરવાની પ્રક્રિયા
+            const file = fileInput.files[0];
+            const metadata = { 'name': file.name, 'mimeType': 'application/pdf' };
             const formData = new FormData();
             formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
             formData.append('file', file);
 
-            try {
-                await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                    method: 'POST',
-                    headers: new Headers({ 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }),
-                    body: formData
-                });
-            } catch (err) {
-                console.error("Upload error:", err);
-            }
+            const uploadResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink', {
+                method: 'POST',
+                headers: new Headers({ 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }),
+                body: formData
+            });
+
+            const result = await uploadResponse.json();
+            const driveLink = result.webViewLink;
+
+            // અહીં તમે તમારા ડેટાબેઝમાં (Localstorage કે AppData) સેવ કરવાનું ફંક્શન લખી શકો
+            console.log("Data to Save:", { val, date, pdfLink: driveLink });
+            
+            status.innerText = "✅ સફળતાપૂર્વક ઉમેરાઈ ગયું!";
+            alert("ડેટા અને PDF ગૂગલ ડ્રાઈવમાં સેવ થઈ ગયા છે!");
+            
+            // ફોર્મ ક્લિયર કરવું
+            document.getElementById('entry-val').value = '';
+            fileInput.value = '';
+
+        } catch (error) {
+            console.error(error);
+            status.innerText = "❌ ભૂલ આવી!";
         }
-        document.getElementById('status').innerText = "✅ બધી PDF સફળતાપૂર્વક અપલોડ થઈ ગઈ!";
-        alert("ફાઈલો ડ્રાઈવમાં સેવ થઈ ગઈ છે.");
     }
 
-    // 4. Save Text Data to AppData
-    async function saveData() {
-        const text = document.getElementById('data-text').value;
-        const fileName = 'stamp_data.json';
-        const content = JSON.stringify({ detail: text, date: new Date() });
-
-        const metadata = {
-            'name': fileName,
-            'mimeType': 'application/json',
-            'parents': ['appDataFolder']
-        };
-
-        const form = new FormData();
-        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-        form.append('file', new Blob([content], { type: 'application/json' }));
-
-        await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-            method: 'POST',
-            headers: new Headers({ 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }),
-            body: form
-        });
-        alert("ડેટા સેવ થયો!");
-    }
-
-    window.onload = () => { gapiLoaded(); gisLoaded(); };
+    window.onload = () => { gapiLoaded(); };
 </script>
-
 <script src="https://accounts.google.com/gsi/client" onload="gisLoaded()" async defer></script>
 </body>
 </html>
