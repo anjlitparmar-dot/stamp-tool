@@ -3,26 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gujarat Stamp Act Tool</title>
+    <title>Gujarat Stamp Act Tool - URL Version</title>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #2c3e50; --secondary: #1abc9c; --bg: #f8f9fa; --accent: #3498db; --text: #2c3e50; --card-bg: #ffffff; }
         * { box-sizing: border-box; font-family: 'Hind Vadodara', sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--text); }
 
-        /* Home View */
+        /* હોમ સ્ક્રીન ડિઝાઇન */
         .home-screen { display: flex; justify-content: center; align-items: center; height: 100vh; gap: 20px; background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%); flex-direction: column; text-align: center; color: white; }
         .tiles-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
         .main-tile { width: 200px; height: 160px; background: white; border-radius: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: #2c3e50; transition: 0.3s; }
+        .main-tile:hover { transform: translateY(-5px); background: #f0fffb; }
 
-        /* Sidebar & Layout */
+        /* એપ લેઆઉટ */
         #app-view { display: none; height: 100vh; flex-direction: row; }
         .sidebar { width: 320px; background: var(--primary); color: white; display: flex; flex-direction: column; }
         .sidebar-list { flex-grow: 1; overflow-y: auto; list-style: none; padding: 10px; margin: 0; }
         .sidebar-list li { padding: 12px; border-bottom: 1px solid #34495e; cursor: pointer; border-radius: 5px; font-size: 14px; display: flex; justify-content: space-between; }
         .sidebar-list li.active { background: var(--secondary); font-weight: 600; }
 
-        .main-content { flex: 1; overflow-y: auto; padding: 20px; }
+        .main-content { flex: 1; overflow-y: auto; padding: 20px; position: relative; }
         .top-nav { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         
         .card { background: var(--card-bg); border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); margin-bottom: 15px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
@@ -35,22 +36,27 @@
         .search-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 10px; }
 
         /* PDF Viewer */
-        #pdf-viewer-container { display: none; margin-bottom: 20px; border: 2px solid var(--secondary); border-radius: 12px; overflow: hidden; }
-        .pdf-frame { width: 100%; height: 500px; border: none; }
+        #pdf-viewer-container { display: none; margin-bottom: 20px; border: 2px solid var(--secondary); border-radius: 12px; overflow: hidden; background: white; }
+        .pdf-frame { width: 100%; height: 600px; border: none; }
+
+        @media print { .sidebar, .top-nav, .add-section, .no-print { display: none !important; } }
     </style>
 </head>
 <body>
 
     <div id="home-view" class="home-screen">
         <h1>ગુજરાત સ્ટેમ્પ અધિનિયમ-૧૯૫૮</h1>
+        <p style="opacity: 0.8;">દસ્તાવેજો અને કાયદાકીય માહિતીનું ડિજિટલ ટૂલ</p>
+        
         <div class="tiles-container">
             <div class="main-tile" onclick="openModule('કલમ')"><h2>📜 કલમ</h2></div>
             <div class="main-tile" onclick="openModule('આર્ટીકલ')"><h2>📑 આર્ટીકલ</h2></div>
             <div class="main-tile" onclick="openModule('જંત્રી')"><h2>🗺️ જંત્રી</h2></div>
         </div>
-        <div style="margin-top: 20px;">
-            <button class="btn" style="background:rgba(255,255,255,0.2); color:white" onclick="exportData()">💾 બેકઅપ</button>
-            <button class="btn" style="background:rgba(255,255,255,0.2); color:white" onclick="document.getElementById('importFile').click()">📂 રીસ્ટોર</button>
+
+        <div style="margin-top: 30px; display: flex; gap: 10px;">
+            <button class="btn" style="background:rgba(255,255,255,0.2); color:white" onclick="exportData()">💾 બેકઅપ (Save JSON)</button>
+            <button class="btn" style="background:rgba(255,255,255,0.2); color:white" onclick="document.getElementById('importFile').click()">📂 રીસ્ટોર (Load JSON)</button>
             <input type="file" id="importFile" style="display:none" onchange="importData(event)">
         </div>
     </div>
@@ -58,7 +64,9 @@
     <div id="app-view">
         <div class="sidebar">
             <div style="padding:15px;"><button class="btn" style="background:#e74c3c; color:white; width:100%" onclick="goHome()">← મુખ્ય મેનુ</button></div>
-            <div style="padding: 0 15px 10px 15px;"><input type="text" id="sideSearch" class="search-box" placeholder="શોધો..." oninput="refreshSide()"></div>
+            <div style="padding: 0 15px 10px 15px;">
+                <input type="text" id="sideSearch" class="search-box" placeholder="શોધો..." oninput="refreshSide()">
+            </div>
             <ul id="item-list" class="sidebar-list"></ul>
         </div>
 
@@ -66,11 +74,11 @@
             <div class="top-nav">
                 <h2 id="current-name" style="flex:1; margin:0;">પસંદ કરો</h2>
                 <button class="btn" id="fav-btn" onclick="toggleFav()">⭐</button>
-                <button class="btn" style="background:var(--primary); color:white; margin-left:10px;" onclick="window.print()">🖨️ પ્રિન્ટ</button>
+                <button class="btn no-print" style="background:var(--primary); color:white; margin-left:10px;" onclick="window.print()">🖨️ પ્રિન્ટ</button>
             </div>
 
             <div id="pdf-viewer-container" class="card">
-                <div style="background:#2c3e50; color:white; padding:10px; display:flex; justify-content:space-between;">
+                <div style="background:#2c3e50; color:white; padding:10px; display:flex; justify-content:space-between; align-items:center;">
                     <span id="pdf-title">📄 PDF Viewer</span>
                     <button onclick="closePDF()" style="background:red; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">બંધ કરો X</button>
                 </div>
@@ -80,24 +88,28 @@
             <div class="card" style="padding: 20px; background: #fffdf0;">
                 <div style="display:flex; justify-content:space-between;">
                     <strong>📖 કાયદાકીય જોગવાઈ:</strong>
-                    <button class="btn" onclick="editP()" id="p-edit-btn">✏️ સુધારો</button>
+                    <button class="btn no-print" onclick="editP()" id="p-edit-btn">✏️ સુધારો</button>
                 </div>
-                <div id="p-text" style="white-space:pre-wrap; margin-top:10px;">...</div>
-                <textarea id="p-input" style="width:100%; height:150px; display:none; margin-top:10px; padding:10px;"></textarea>
+                <div id="p-text" style="white-space:pre-wrap; margin-top:10px; line-height:1.6;">માહિતી જોવા માટે ડાબી બાજુથી પસંદ કરો...</div>
+                <textarea id="p-input" style="width:100%; height:150px; display:none; margin-top:10px; padding:10px; border-radius:8px;"></textarea>
                 <button id="p-save" class="btn" style="display:none; margin-top:10px; background:var(--secondary); color:white" onclick="saveP()">સેવ કરો</button>
             </div>
 
-            <div class="card add-section" style="padding:15px;">
+            <div class="card add-section" style="padding:15px; background: #eef2f5;">
+                <div style="font-weight: bold; margin-bottom: 10px; font-size: 14px; color: #555;">➕ નવો દસ્તાવેજ ઉમેરો:</div>
                 <div style="display:flex; gap:10px; flex-wrap: wrap; align-items: center;">
-                    <input type="text" id="fName" placeholder="વિગત લખો" style="flex:1.5; padding:8px; border-radius:5px; border:1px solid #ddd;">
-                    <input type="date" id="fDate" style="padding:8px; border-radius:5px; border:1px solid #ddd;">
-                    <input type="text" id="fURL" placeholder="PDF લિંક પેસ્ટ કરો (GitHub/Drive)" style="flex:2; padding:8px; border-radius:5px; border:1px solid #ddd;">
-                    <select id="fType" style="padding:8px; border-radius:5px; border:1px solid #ddd;">
+                    <input type="text" id="fName" placeholder="દસ્તાવેજની વિગત (દા.ત. સ્ટેમ્પ ડ્યુટી ઘટાડા બાબત)" style="flex:2; padding:10px; border-radius:5px; border:1px solid #ddd;">
+                    <input type="date" id="fDate" style="padding:10px; border-radius:5px; border:1px solid #ddd;">
+                    
+                    <input type="text" id="fURL" placeholder="PDF ની લિંક (URL) અહીં પેસ્ટ કરો" style="flex:3; padding:10px; border-radius:5px; border:1px solid #ddd;">
+
+                    <select id="fType" style="padding:10px; border-radius:5px; border:1px solid #ddd;">
                         <option>CCRA હુકમ</option><option>પરિપત્ર</option><option>ઠરાવ</option>
                         <option>ઓડીટ પેરા</option><option>કોર્ટના ચુકાદા</option>
                     </select>
-                    <button class="btn" style="background:var(--secondary); color:white" onclick="addFile()">➕ ઉમેરો</button>
+                    <button class="btn" style="background:var(--secondary); color:white; padding: 10px 20px;" onclick="addFile()">➕ ઉમેરો</button>
                 </div>
+                <p style="font-size: 11px; color: #7f8c8d; margin-top: 8px;">* GitHub કે Google Drive માં PDF અપલોડ કરી તેની 'Direct Link' અહીં પેસ્ટ કરો.</p>
             </div>
 
             <div id="results-area"></div>
@@ -108,6 +120,7 @@
         let curMod = ''; let curItem = '';
         let db = JSON.parse(localStorage.getItem('StampAct_V22')) || null;
 
+        // ડેટાબેઝ સેટઅપ
         if (!db) {
             db = {"કલમ":{}, "આર્ટીકલ":{}, "જંત્રી":{}};
             for(let i=1; i<=76; i++) db["કલમ"][`કલમ-${i}`] = { provision: "", files: [], fav: false };
@@ -142,21 +155,24 @@
         }
 
         function selectItem(n) {
+            if(!n) return;
             curItem = n;
             document.getElementById('current-name').innerText = n;
             document.getElementById('fav-btn').style.color = db[curMod][curItem].fav ? "#f1c40f" : "#ccc";
-            document.getElementById('p-text').innerText = db[curMod][curItem].provision || "માહિતી ભરો...";
+            document.getElementById('p-text').innerText = db[curMod][curItem].provision || "માહિતી લખવા માટે 'સુધારો' બટન દબાવો...";
             renderFiles(); refreshSide(); closePDF();
         }
 
-        // PDF Display Logic
+        // PDF વ્યૂઅર લોજિક
         function viewPDF(url, name) {
             let finalUrl = url;
-            // જો ગૂગલ ડ્રાઈવની લિંક હોય તો તેને Viewer ફોર્મેટમાં ફેરવો
+            // Google Drive લિંકને પ્રિવ્યૂમાં ફેરવો
             if (url.includes('drive.google.com')) {
                 const fileId = url.match(/[-\w]{25,}/);
                 if (fileId) finalUrl = `https://drive.google.com/file/d/${fileId[0]}/preview`;
             }
+            // GitHub લિંક જો Raw ન હોય તો તેને હેન્ડલ કરવી (User એ Raw લિંક જ નાખવી જોઈએ)
+
             document.getElementById('pdf-frame').src = finalUrl;
             document.getElementById('pdf-title').innerText = "📄 " + name;
             document.getElementById('pdf-viewer-container').style.display = 'block';
@@ -168,42 +184,80 @@
             document.getElementById('pdf-frame').src = "";
         }
 
+        // લિંક ઉમેરવાનું લોજિક
         function addFile() {
             const name = document.getElementById('fName').value;
             const date = document.getElementById('fDate').value;
             const url = document.getElementById('fURL').value;
             const type = document.getElementById('fType').value;
 
-            if(!name || !url) return alert("નામ અને લિંક જરૂરી છે!");
+            if(!name || !url) { alert("કૃપા કરીને નામ અને URL લિંક બંને ભરો!"); return; }
 
-            db[curMod][curItem].files.push({ id: Date.now(), name, date, url, type, ts: new Date(date).getTime() });
-            save(); renderFiles();
-            document.getElementById('fName').value = ''; document.getElementById('fURL').value = '';
+            db[curMod][curItem].files.push({ 
+                id: Date.now(), 
+                name, 
+                date, 
+                url, 
+                type, 
+                ts: date ? new Date(date).getTime() : 0 
+            });
+            
+            save(); 
+            renderFiles();
+            // ફોર્મ ક્લિયર કરો
+            document.getElementById('fName').value = '';
+            document.getElementById('fURL').value = '';
+            document.getElementById('fDate').value = '';
         }
 
         function renderFiles() {
-            const container = document.getElementById('results-area'); container.innerHTML = "";
-            const cats = ["CCRA હુકમ", "પરિપત્ર", "ઠરાવ", "ઓડીટ પેરા", "કોર્ટના ચુકાદા"];
-            cats.forEach(c => {
-                let filtered = db[curMod][curItem].files.filter(f => f.type === c).sort((a,b) => b.ts - a.ts);
+            const container = document.getElementById('results-area'); 
+            container.innerHTML = "";
+            const categories = ["CCRA હુકમ", "પરિપત્ર", "ઠરાવ", "ઓડીટ પેરા", "કોર્ટના ચુકાદા"];
+            
+            categories.forEach(cat => {
+                let filtered = db[curMod][curItem].files.filter(f => f.type === cat).sort((a,b) => b.ts - a.ts);
                 if(filtered.length > 0) {
-                    let h = `<div class="card"><div class="cat-header">${c}</div><table>`;
+                    let html = `<div class="card"><div class="cat-header">${cat}</div><table>`;
                     filtered.forEach(f => {
-                        h += `<tr><td width="100">${f.date ? f.date.split('-').reverse().join('-') : '--'}</td>
-                        <td><a href="javascript:void(0)" onclick="viewPDF('${f.url}', '${f.name}')" style="text-decoration:none; color:var(--accent); font-weight:600;">📄 ${f.name}</a></td>
-                        <td width="50"><button onclick="deleteFile(${f.id})" style="border:none; background:none; cursor:pointer;">🗑️</button></td></tr>`;
+                        let displayDate = f.date ? f.date.split('-').reverse().join('-') : '--';
+                        html += `<tr>
+                            <td width="100">${displayDate}</td>
+                            <td><a href="javascript:void(0)" onclick="viewPDF('${f.url}', '${f.name}')" style="text-decoration:none; color:var(--accent); font-weight:600;">📄 ${f.name}</a></td>
+                            <td width="50" class="no-print"><button onclick="deleteFile(${f.id})" style="border:none; background:none; cursor:pointer; color:red;">🗑️</button></td>
+                        </tr>`;
                     });
-                    container.innerHTML += h + `</table></div>`;
+                    container.innerHTML += html + `</table></div>`;
                 }
             });
         }
 
+        // અન્ય સહાયક ફંક્શન્સ
         function editP() { document.getElementById('p-text').style.display='none'; document.getElementById('p-input').style.display='block'; document.getElementById('p-input').value = db[curMod][curItem].provision; document.getElementById('p-save').style.display='block'; document.getElementById('p-edit-btn').style.display='none'; }
         function saveP() { db[curMod][curItem].provision = document.getElementById('p-input').value; save(); document.getElementById('p-text').innerText = db[curMod][curItem].provision; document.getElementById('p-text').style.display='block'; document.getElementById('p-input').style.display='none'; document.getElementById('p-save').style.display='none'; document.getElementById('p-edit-btn').style.display='block'; }
-        function toggleFav() { db[curMod][curItem].fav = !db[curMod][curItem].fav; save(); selectItem(curItem); }
-        function deleteFile(fid) { if(confirm("કાઢી નાખવું છે?")) { db[curMod][curItem].files = db[curMod][curItem].files.filter(f => f.id !== fid); save(); renderFiles(); } }
-        function exportData() { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db)); const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", "StampAct_Backup.json"); dl.click(); }
-        function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); location.reload(); }; reader.readAsText(e.target.files[0]); }
+        function toggleFav() { db[curMod][curItem].fav = !db[curMod][curItem].fav; save(); refreshSide(); }
+        function deleteFile(fid) { if(confirm("આ દસ્તાવેજ કાઢી નાખવો છે?")) { db[curMod][curItem].files = db[curMod][curItem].files.filter(f => f.id !== fid); save(); renderFiles(); } }
+        
+        // બેકઅપ અને રીસ્ટોર
+        function exportData() { 
+            const blob = new Blob([JSON.stringify(db)], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `StampTool_Backup_${new Date().toLocaleDateString()}.json`;
+            a.click();
+        }
+        function importData(e) { 
+            const reader = new FileReader(); 
+            reader.onload = (ev) => { 
+                try {
+                    db = JSON.parse(ev.target.result); 
+                    save(); 
+                    location.reload(); 
+                } catch(err) { alert("ખોટી ફાઈલ! મહેરબાની કરીને સાચી JSON બેકઅપ ફાઈલ પસંદ કરો."); }
+            }; 
+            reader.readAsText(e.target.files[0]); 
+        }
     </script>
 </body>
 </html>
