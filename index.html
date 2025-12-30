@@ -5,27 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gujarat Stamp Act Tool</title>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://apis.google.com/js/api.js"></script>
     <style>
         :root { --primary: #2c3e50; --secondary: #1abc9c; --bg: #f8f9fa; --accent: #3498db; --text: #2c3e50; --card-bg: #ffffff; }
         * { box-sizing: border-box; font-family: 'Hind Vadodara', sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--text); }
 
-        /* Home Screen */
+        /* Home View */
         .home-screen { display: flex; justify-content: center; align-items: center; height: 100vh; gap: 20px; background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%); flex-direction: column; text-align: center; color: white; }
         .tiles-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
         .main-tile { width: 200px; height: 160px; background: white; border-radius: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: #2c3e50; transition: 0.3s; }
-        .main-tile:hover { transform: translateY(-5px); background: #f0fffb; }
 
-        /* Main Layout */
+        /* Sidebar & Layout */
         #app-view { display: none; height: 100vh; flex-direction: row; }
         .sidebar { width: 320px; background: var(--primary); color: white; display: flex; flex-direction: column; }
         .sidebar-list { flex-grow: 1; overflow-y: auto; list-style: none; padding: 10px; margin: 0; }
         .sidebar-list li { padding: 12px; border-bottom: 1px solid #34495e; cursor: pointer; border-radius: 5px; font-size: 14px; display: flex; justify-content: space-between; }
         .sidebar-list li.active { background: var(--secondary); font-weight: 600; }
 
-        .main-content { flex: 1; overflow-y: auto; padding: 20px; position: relative; }
+        .main-content { flex: 1; overflow-y: auto; padding: 20px; }
         .top-nav { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         
         .card { background: var(--card-bg); border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); margin-bottom: 15px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
@@ -37,34 +34,31 @@
         .btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
         .search-box { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 10px; }
 
-        /* PDF Viewer Styling */
-        #pdf-viewer-container { display: none; margin-bottom: 20px; border: 2px solid var(--secondary); border-radius: 12px; overflow: hidden; background: white; }
+        /* PDF Viewer */
+        #pdf-viewer-container { display: none; margin-bottom: 20px; border: 2px solid var(--secondary); border-radius: 12px; overflow: hidden; }
         .pdf-frame { width: 100%; height: 500px; border: none; }
-
-        @media print { .sidebar, .top-nav, .add-section, .no-print { display: none !important; } }
     </style>
 </head>
 <body>
 
     <div id="home-view" class="home-screen">
         <h1>ગુજરાત સ્ટેમ્પ અધિનિયમ-૧૯૫૮</h1>
-        <div style="margin-bottom: 20px;">
-            <button id="auth_btn" class="btn" style="background:#4285F4; color:white;" onclick="handleAuthClick()">🔐 Google Drive સાથે જોડો</button>
-            <p id="status-text" style="font-size: 12px; margin-top: 10px; color: #bdc3c7;">સ્થિતિ: ડિસ્કનેક્ટેડ</p>
-        </div>
         <div class="tiles-container">
             <div class="main-tile" onclick="openModule('કલમ')"><h2>📜 કલમ</h2></div>
             <div class="main-tile" onclick="openModule('આર્ટીકલ')"><h2>📑 આર્ટીકલ</h2></div>
             <div class="main-tile" onclick="openModule('જંત્રી')"><h2>🗺️ જંત્રી</h2></div>
+        </div>
+        <div style="margin-top: 20px;">
+            <button class="btn" style="background:rgba(255,255,255,0.2); color:white" onclick="exportData()">💾 બેકઅપ</button>
+            <button class="btn" style="background:rgba(255,255,255,0.2); color:white" onclick="document.getElementById('importFile').click()">📂 રીસ્ટોર</button>
+            <input type="file" id="importFile" style="display:none" onchange="importData(event)">
         </div>
     </div>
 
     <div id="app-view">
         <div class="sidebar">
             <div style="padding:15px;"><button class="btn" style="background:#e74c3c; color:white; width:100%" onclick="goHome()">← મુખ્ય મેનુ</button></div>
-            <div style="padding: 0 15px 10px 15px;">
-                <input type="text" id="sideSearch" class="search-box" placeholder="શોધો..." oninput="refreshSide()">
-            </div>
+            <div style="padding: 0 15px 10px 15px;"><input type="text" id="sideSearch" class="search-box" placeholder="શોધો..." oninput="refreshSide()"></div>
             <ul id="item-list" class="sidebar-list"></ul>
         </div>
 
@@ -72,11 +66,11 @@
             <div class="top-nav">
                 <h2 id="current-name" style="flex:1; margin:0;">પસંદ કરો</h2>
                 <button class="btn" id="fav-btn" onclick="toggleFav()">⭐</button>
-                <button class="btn no-print" style="background:var(--primary); color:white; margin-left:10px;" onclick="window.print()">🖨️ પ્રિન્ટ</button>
+                <button class="btn" style="background:var(--primary); color:white; margin-left:10px;" onclick="window.print()">🖨️ પ્રિન્ટ</button>
             </div>
 
             <div id="pdf-viewer-container" class="card">
-                <div style="background:#2c3e50; color:white; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="background:#2c3e50; color:white; padding:10px; display:flex; justify-content:space-between;">
                     <span id="pdf-title">📄 PDF Viewer</span>
                     <button onclick="closePDF()" style="background:red; color:white; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">બંધ કરો X</button>
                 </div>
@@ -86,29 +80,24 @@
             <div class="card" style="padding: 20px; background: #fffdf0;">
                 <div style="display:flex; justify-content:space-between;">
                     <strong>📖 કાયદાકીય જોગવાઈ:</strong>
-                    <button class="btn no-print" onclick="editP()" id="p-edit-btn">✏️ સુધારો</button>
+                    <button class="btn" onclick="editP()" id="p-edit-btn">✏️ સુધારો</button>
                 </div>
-                <div id="p-text" style="white-space:pre-wrap; margin-top:10px; line-height:1.6;">...</div>
+                <div id="p-text" style="white-space:pre-wrap; margin-top:10px;">...</div>
                 <textarea id="p-input" style="width:100%; height:150px; display:none; margin-top:10px; padding:10px;"></textarea>
                 <button id="p-save" class="btn" style="display:none; margin-top:10px; background:var(--secondary); color:white" onclick="saveP()">સેવ કરો</button>
             </div>
 
             <div class="card add-section" style="padding:15px;">
                 <div style="display:flex; gap:10px; flex-wrap: wrap; align-items: center;">
-                    <input type="text" id="fName" placeholder="વિગત લખો" style="flex:2; padding:8px; border-radius:5px; border:1px solid #ddd;">
+                    <input type="text" id="fName" placeholder="વિગત લખો" style="flex:1.5; padding:8px; border-radius:5px; border:1px solid #ddd;">
                     <input type="date" id="fDate" style="padding:8px; border-radius:5px; border:1px solid #ddd;">
-                    
-                    <div style="flex:1; min-width:180px; border:1px solid #ddd; padding:5px; border-radius:5px; background:white;">
-                        <input type="file" id="fPDFFile" accept="application/pdf" style="font-size:11px; width:100%;">
-                    </div>
-
+                    <input type="text" id="fURL" placeholder="PDF લિંક પેસ્ટ કરો (GitHub/Drive)" style="flex:2; padding:8px; border-radius:5px; border:1px solid #ddd;">
                     <select id="fType" style="padding:8px; border-radius:5px; border:1px solid #ddd;">
                         <option>CCRA હુકમ</option><option>પરિપત્ર</option><option>ઠરાવ</option>
                         <option>ઓડીટ પેરા</option><option>કોર્ટના ચુકાદા</option>
                     </select>
-                    <button class="btn" style="background:var(--secondary); color:white" onclick="addFileWithUpload()">➕ ઉમેરો</button>
+                    <button class="btn" style="background:var(--secondary); color:white" onclick="addFile()">➕ ઉમેરો</button>
                 </div>
-                <small id="upload-status" style="display:block; margin-top:5px; color:blue;"></small>
             </div>
 
             <div id="results-area"></div>
@@ -116,53 +105,9 @@
     </div>
 
     <script>
-        const CLIENT_ID = '397668795740-8q3rsm03at45tga2p820pi2pmris2pvu.apps.googleusercontent.com';
-        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
-
-        let tokenClient, gapiInited = false;
         let curMod = ''; let curItem = '';
         let db = JSON.parse(localStorage.getItem('StampAct_V22')) || null;
 
-        // Initialize Google APIs
-        function gapiLoaded() {
-            gapi.load('client', async () => {
-                await gapi.client.init({ discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'] });
-                gapiInited = true;
-                
-                // Auto-load token if exists
-                const savedToken = localStorage.getItem('google_token');
-                if (savedToken) {
-                    gapi.client.setToken(JSON.parse(savedToken));
-                    updateStatus(true);
-                }
-            });
-        }
-
-        function gisLoaded() {
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID,
-                scope: SCOPES,
-                callback: (resp) => {
-                    if (resp.error) return;
-                    localStorage.setItem('google_token', JSON.stringify(resp));
-                    updateStatus(true);
-                },
-            });
-        }
-
-        function handleAuthClick() { tokenClient.requestAccessToken({prompt: 'consent'}); }
-        
-        function updateStatus(connected) {
-            const btn = document.getElementById('auth_btn');
-            const txt = document.getElementById('status-text');
-            if (connected) {
-                btn.innerText = "✅ કનેક્ટેડ";
-                btn.style.background = "#27ae60";
-                txt.innerText = "સ્થિતિ: ગૂગલ ડ્રાઇવ સાથે જોડાયેલ છે";
-            }
-        }
-
-        // DB Setup
         if (!db) {
             db = {"કલમ":{}, "આર્ટીકલ":{}, "જંત્રી":{}};
             for(let i=1; i<=76; i++) db["કલમ"][`કલમ-${i}`] = { provision: "", files: [], fav: false };
@@ -204,17 +149,18 @@
             renderFiles(); refreshSide(); closePDF();
         }
 
-        // PDF View Logic
+        // PDF Display Logic
         function viewPDF(url, name) {
-            const fileId = url.match(/[-\w]{25,}/);
-            if (fileId) {
-                document.getElementById('pdf-frame').src = `https://drive.google.com/file/d/${fileId[0]}/preview`;
-                document.getElementById('pdf-title').innerText = "📄 " + name;
-                document.getElementById('pdf-viewer-container').style.display = 'block';
-                window.scrollTo({top: 0, behavior: 'smooth'});
-            } else {
-                window.open(url, '_blank');
+            let finalUrl = url;
+            // જો ગૂગલ ડ્રાઈવની લિંક હોય તો તેને Viewer ફોર્મેટમાં ફેરવો
+            if (url.includes('drive.google.com')) {
+                const fileId = url.match(/[-\w]{25,}/);
+                if (fileId) finalUrl = `https://drive.google.com/file/d/${fileId[0]}/preview`;
             }
+            document.getElementById('pdf-frame').src = finalUrl;
+            document.getElementById('pdf-title').innerText = "📄 " + name;
+            document.getElementById('pdf-viewer-container').style.display = 'block';
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
         function closePDF() {
@@ -222,39 +168,17 @@
             document.getElementById('pdf-frame').src = "";
         }
 
-        // Upload Logic
-        async function addFileWithUpload() {
-            const fileInput = document.getElementById('fPDFFile');
+        function addFile() {
             const name = document.getElementById('fName').value;
             const date = document.getElementById('fDate').value;
+            const url = document.getElementById('fURL').value;
             const type = document.getElementById('fType').value;
-            const status = document.getElementById('upload-status');
 
-            if(!fileInput.files[0] || !name) return alert("નામ અને ફાઇલ પસંદ કરો!");
+            if(!name || !url) return alert("નામ અને લિંક જરૂરી છે!");
 
-            status.innerText = "⏳ ડ્રાઇવ પર અપલોડ થઈ રહ્યું છે...";
-            try {
-                const file = fileInput.files[0];
-                const metadata = { 'name': file.name, 'mimeType': 'application/pdf' };
-                const formData = new FormData();
-                formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-                formData.append('file', file);
-
-                const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink', {
-                    method: 'POST',
-                    headers: new Headers({ 'Authorization': 'Bearer ' + gapi.client.getToken().access_token }),
-                    body: formData
-                });
-                const result = await response.json();
-                
-                db[curMod][curItem].files.push({ id: Date.now(), name, date, url: result.webViewLink, type, ts: new Date(date).getTime() });
-                save(); renderFiles();
-                status.innerText = "✅ સફળતાપૂર્વક ઉમેરાયું!";
-                document.getElementById('fName').value = ''; fileInput.value = '';
-            } catch (err) {
-                alert("પહેલા 'Google Drive સાથે જોડો' પર ક્લિક કરો.");
-                status.innerText = "";
-            }
+            db[curMod][curItem].files.push({ id: Date.now(), name, date, url, type, ts: new Date(date).getTime() });
+            save(); renderFiles();
+            document.getElementById('fName').value = ''; document.getElementById('fURL').value = '';
         }
 
         function renderFiles() {
@@ -267,20 +191,19 @@
                     filtered.forEach(f => {
                         h += `<tr><td width="100">${f.date ? f.date.split('-').reverse().join('-') : '--'}</td>
                         <td><a href="javascript:void(0)" onclick="viewPDF('${f.url}', '${f.name}')" style="text-decoration:none; color:var(--accent); font-weight:600;">📄 ${f.name}</a></td>
-                        <td width="50" class="no-print"><button onclick="deleteFile(${f.id})" style="border:none; background:none; cursor:pointer;">🗑️</button></td></tr>`;
+                        <td width="50"><button onclick="deleteFile(${f.id})" style="border:none; background:none; cursor:pointer;">🗑️</button></td></tr>`;
                     });
                     container.innerHTML += h + `</table></div>`;
                 }
             });
         }
 
-        // Utility
         function editP() { document.getElementById('p-text').style.display='none'; document.getElementById('p-input').style.display='block'; document.getElementById('p-input').value = db[curMod][curItem].provision; document.getElementById('p-save').style.display='block'; document.getElementById('p-edit-btn').style.display='none'; }
         function saveP() { db[curMod][curItem].provision = document.getElementById('p-input').value; save(); document.getElementById('p-text').innerText = db[curMod][curItem].provision; document.getElementById('p-text').style.display='block'; document.getElementById('p-input').style.display='none'; document.getElementById('p-save').style.display='none'; document.getElementById('p-edit-btn').style.display='block'; }
         function toggleFav() { db[curMod][curItem].fav = !db[curMod][curItem].fav; save(); selectItem(curItem); }
-        function deleteFile(fid) { if(confirm("ફાઇલ કાઢી નાખવી છે?")) { db[curMod][curItem].files = db[curMod][curItem].files.filter(f => f.id !== fid); save(); renderFiles(); } }
-
-        window.onload = () => { gapiLoaded(); gisLoaded(); };
+        function deleteFile(fid) { if(confirm("કાઢી નાખવું છે?")) { db[curMod][curItem].files = db[curMod][curItem].files.filter(f => f.id !== fid); save(); renderFiles(); } }
+        function exportData() { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db)); const dl = document.createElement('a'); dl.setAttribute("href", dataStr); dl.setAttribute("download", "StampAct_Backup.json"); dl.click(); }
+        function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); location.reload(); }; reader.readAsText(e.target.files[0]); }
     </script>
 </body>
 </html>
