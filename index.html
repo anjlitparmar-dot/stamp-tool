@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gujarat Stamp Act Tool - Final</title>
+    <title>Gujarat Stamp Act Tool - Locked Title</title>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #2c3e50; --secondary: #1abc9c; --bg: #f8f9fa; --accent: #3498db; --text: #2c3e50; --card-bg: #ffffff; }
@@ -48,7 +48,7 @@
 
     <div id="home-view" class="home-screen">
         <h1 style="font-size: 28px; margin-bottom: 10px;">ગુજરાત સ્ટેમ્પ અધિનિયમ-૧૯૫૮</h1>
-        <input type="text" class="main-search" id="mainSearch" placeholder="કોઈપણ કલમ, આર્ટીકલ કે શીર્ષક શોધો..." oninput="globalSearch()">
+        <input type="text" class="main-search" id="mainSearch" placeholder="શોધો..." oninput="globalSearch()">
         <div id="search-results" style="width: 100%; max-width: 600px; margin-top: -20px; margin-bottom: 20px;"></div>
 
         <div class="tiles-container">
@@ -77,12 +77,9 @@
             <div class="top-nav">
                 <div style="flex:1; display:flex; align-items:center; gap:10px;">
                     <h2 id="current-name" style="margin:0; font-size: 20px; white-space: nowrap;">પસંદ કરો</h2>
-                    <div id="title-wrapper" style="display:flex; align-items:center; gap:8px;">
-                        <span id="display-title" style="font-size: 18px; color: var(--secondary); font-weight: 600; cursor:pointer;" onclick="showTitleEdit()">- શીર્ષક ઉમેરો ✏️</span>
-                        <div id="edit-title-box" style="display:none; gap:5px;">
-                            <input type="text" id="title-input" class="input-field" style="padding:5px; width:300px;" placeholder="શીર્ષક લખો...">
-                            <button class="btn btn-primary" style="padding:5px 10px;" onclick="saveTitle()">સેવ</button>
-                        </div>
+                    <div id="title-display-area" style="font-size: 18px; color: var(--secondary); font-weight: 600;">
+                        <span id="display-title"></span>
+                        <button id="add-title-btn" class="btn btn-outline" style="padding:2px 8px; font-size:12px; margin-left:10px;" onclick="showTitleEdit()">+ શીર્ષક ઉમેરો</button>
                     </div>
                 </div>
                 <button class="btn btn-outline" id="fav-btn" onclick="toggleFav()">⭐</button>
@@ -99,12 +96,24 @@
 
             <div class="card" style="background: #fffef5; border: 1px solid #f1e6b2;">
                 <div style="display:flex; justify-content:space-between; align-items: center; margin-bottom:12px;">
-                    <strong>📖 કાયદાકીય જોગવાઈ:</strong>
-                    <button class="btn btn-outline" onclick="editP()" id="p-edit-btn">✏️ સુધારો</button>
+                    <strong>📖 વિગત અને જોગવાઈ:</strong>
+                    <button class="btn btn-outline" onclick="editAll()" id="edit-all-btn">✏️ સુધારો</button>
                 </div>
-                <div id="p-text" style="white-space:pre-wrap; line-height:1.7; color:#2c3e50;">વિગત અહીં દેખાશે...</div>
-                <textarea id="p-input" class="input-field" style="width:100%; height:200px; display:none;"></textarea>
-                <button id="p-save" class="btn btn-primary" style="display:none; margin-top:10px;" onclick="saveP()">સેવ કરો</button>
+
+                <div id="edit-mode" style="display:none;">
+                    <label style="font-size:12px; color:#666;">શીર્ષક (Title):</label>
+                    <input type="text" id="title-input" class="input-field" style="width:100%; margin-bottom:15px;" placeholder="શીર્ષક લખો (દા.ત. ટૂંકી સંજ્ઞા)">
+                    
+                    <label style="font-size:12px; color:#666;">જોગવાઈ (Provision):</label>
+                    <textarea id="p-input" class="input-field" style="width:100%; height:200px;"></textarea>
+                    
+                    <button class="btn btn-primary" style="margin-top:10px;" onclick="saveAll()">સેવ કરો</button>
+                    <button class="btn btn-outline" style="margin-top:10px;" onclick="cancelEdit()">કેન્સલ</button>
+                </div>
+
+                <div id="view-mode">
+                    <div id="p-text" style="white-space:pre-wrap; line-height:1.7; color:#2c3e50;">વિગત અહીં દેખાશે...</div>
+                </div>
             </div>
 
             <div class="card add-section" style="background: #eef2f5;">
@@ -120,14 +129,13 @@
                     <button class="btn btn-primary" onclick="addFile()">➕ ઉમેરો</button>
                 </div>
             </div>
-
             <div id="results-area"></div>
         </div>
     </div>
 
     <script>
         let curMod = ''; let curItem = '';
-        let db = JSON.parse(localStorage.getItem('StampAct_Pro_V3')) || null;
+        let db = JSON.parse(localStorage.getItem('StampAct_Final_V4')) || null;
 
         if (!db) {
             db = {"કલમ":{}, "આર્ટીકલ":{}, "જંત્રી":{}};
@@ -137,8 +145,7 @@
             save();
         }
 
-        function save() { localStorage.setItem('StampAct_Pro_V3', JSON.stringify(db)); }
-
+        function save() { localStorage.setItem('StampAct_Final_V4', JSON.stringify(db)); }
         function goHome() { document.getElementById('home-view').style.display='flex'; document.getElementById('app-view').style.display='none'; }
 
         function openModule(m) {
@@ -166,34 +173,42 @@
         function selectItem(n) {
             curItem = n; const data = db[curMod][curItem];
             document.getElementById('current-name').innerText = n;
-            document.getElementById('display-title').innerText = data.title ? " - " + data.title : " - શીર્ષક ઉમેરો ✏️";
+            
+            // શીર્ષક ડિસ્પ્લે લોજિક
+            if(data.title) {
+                document.getElementById('display-title').innerText = " - " + data.title;
+                document.getElementById('add-title-btn').style.display = 'none'; // લોક થઈ ગયું
+            } else {
+                document.getElementById('display-title').innerText = "";
+                document.getElementById('add-title-btn').style.display = 'inline-block';
+            }
+
             document.getElementById('p-text').innerText = data.provision || "માહિતી ભરો...";
             document.getElementById('fav-btn').style.color = data.fav ? "#f1c40f" : "#ccc";
-            document.getElementById('edit-title-box').style.display = 'none';
-            document.getElementById('display-title').style.display = 'inline';
-            renderFiles(); refreshSide(); closePDF();
+            cancelEdit(); renderFiles(); refreshSide(); closePDF();
         }
 
-        function showTitleEdit() {
-            document.getElementById('display-title').style.display = 'none';
-            document.getElementById('edit-title-box').style.display = 'flex';
+        // એડિટિંગ લોજિક
+        function editAll() {
+            document.getElementById('view-mode').style.display = 'none';
+            document.getElementById('edit-mode').style.display = 'block';
+            document.getElementById('edit-all-btn').style.display = 'none';
             document.getElementById('title-input').value = db[curMod][curItem].title;
-            document.getElementById('title-input').focus();
+            document.getElementById('p-input').value = db[curMod][curItem].provision;
         }
 
-        function saveTitle() {
+        function showTitleEdit() { editAll(); } // બટનથી પણ એડિટ ખુલે
+
+        function saveAll() {
             db[curMod][curItem].title = document.getElementById('title-input').value;
+            db[curMod][curItem].provision = document.getElementById('p-input').value;
             save(); selectItem(curItem);
         }
 
-        function addFile() {
-            const name = document.getElementById('fName').value;
-            const url = document.getElementById('fURL').value;
-            const date = document.getElementById('fDate').value;
-            if(!name || !url) return alert("નામ અને લિંક જરૂરી છે!");
-            db[curMod][curItem].files.push({ id: Date.now(), name, date, url, type: document.getElementById('fType').value });
-            save(); renderFiles();
-            document.getElementById('fName').value = ''; document.getElementById('fURL').value = '';
+        function cancelEdit() {
+            document.getElementById('view-mode').style.display = 'block';
+            document.getElementById('edit-mode').style.display = 'none';
+            document.getElementById('edit-all-btn').style.display = 'inline-block';
         }
 
         function renderFiles() {
@@ -204,7 +219,6 @@
                 if(filtered.length > 0) {
                     let h = `<div class="card"><div class="cat-header">${c}</div><table width="100%">`;
                     filtered.forEach(f => {
-                        // તારીખનું DD/MM/YYYY ફોર્મેટ
                         let formattedDate = "--";
                         if(f.date) {
                             const d = new Date(f.date);
@@ -217,6 +231,15 @@
                     container.innerHTML += h + `</table></div>`;
                 }
             });
+        }
+
+        function addFile() {
+            const name = document.getElementById('fName').value;
+            const url = document.getElementById('fURL').value;
+            if(!name || !url) return alert("નામ અને લિંક જરૂરી છે!");
+            db[curMod][curItem].files.push({ id: Date.now(), name, date: document.getElementById('fDate').value, url, type: document.getElementById('fType').value });
+            save(); renderFiles();
+            document.getElementById('fName').value = ''; document.getElementById('fURL').value = '';
         }
 
         function viewPDF(url, name) {
@@ -250,11 +273,9 @@
 
         function quickJump(m, i) { curMod = m; document.getElementById('home-view').style.display='none'; document.getElementById('app-view').style.display='flex'; refreshSide(); selectItem(i); }
         function closePDF() { document.getElementById('pdf-viewer-container').style.display = 'none'; document.getElementById('pdf-frame').src = ""; }
-        function editP() { document.getElementById('p-text').style.display='none'; document.getElementById('p-input').style.display='block'; document.getElementById('p-input').value = db[curMod][curItem].provision; document.getElementById('p-save').style.display='block'; document.getElementById('p-edit-btn').style.display='none'; }
-        function saveP() { db[curMod][curItem].provision = document.getElementById('p-input').value; save(); selectItem(curItem); document.getElementById('p-text').style.display='block'; document.getElementById('p-input').style.display='none'; document.getElementById('p-save').style.display='none'; document.getElementById('p-edit-btn').style.display='block'; }
         function toggleFav() { db[curMod][curItem].fav = !db[curMod][curItem].fav; save(); refreshSide(); }
         function deleteFile(id) { if(confirm("કાઢી નાખવું છે?")) { db[curMod][curItem].files = db[curMod][curItem].files.filter(f => f.id !== id); save(); renderFiles(); } }
-        function exportData() { const blob = new Blob([JSON.stringify(db)], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `StampAct_Data.json`; a.click(); }
+        function exportData() { const blob = new Blob([JSON.stringify(db)], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `StampAct_Backup.json`; a.click(); }
         function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { db = JSON.parse(ev.target.result); save(); location.reload(); }; reader.readAsText(e.target.files[0]); }
     </script>
 </body>
